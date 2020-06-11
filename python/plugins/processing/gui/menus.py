@@ -43,7 +43,8 @@ menusSettingsGroup = 'Menus'
 
 defaultMenuEntries = {}
 vectorMenu = QApplication.translate('MainWindow', 'Vect&or')
-analysisToolsMenu = vectorMenu + "/" + Processing.tr('&Analysis Tools')
+# analysisToolsMenu = vectorMenu + "/" + Processing.tr('&Analysis Tools')
+analysisToolsMenu = [vectorMenu + "/" + Processing.tr('&Analysis Tools'), vectorMenu + "/" + 'Analysis_Tools']
 defaultMenuEntries.update({'qgis:distancematrix': analysisToolsMenu,
                            'native:sumlinelengths': analysisToolsMenu,
                            'native:countpointsinpolygon': analysisToolsMenu,
@@ -52,7 +53,8 @@ defaultMenuEntries.update({'qgis:distancematrix': analysisToolsMenu,
                            'native:nearestneighbouranalysis': analysisToolsMenu,
                            'native:meancoordinates': analysisToolsMenu,
                            'native:lineintersections': analysisToolsMenu})
-researchToolsMenu = vectorMenu + "/" + Processing.tr('&Research Tools')
+# researchToolsMenu = vectorMenu + "/" + Processing.tr('&Research Tools')
+researchToolsMenu = [vectorMenu + "/" + Processing.tr('&Research Tools'), vectorMenu + "/" + 'Research_Tools']
 defaultMenuEntries.update({'native:creategrid': researchToolsMenu,
                            'qgis:randomselection': researchToolsMenu,
                            'qgis:randomselectionwithinsubsets': researchToolsMenu,
@@ -62,8 +64,8 @@ defaultMenuEntries.update({'native:creategrid': researchToolsMenu,
                            'qgis:regularpoints': researchToolsMenu,
                            'native:selectbylocation': researchToolsMenu,
                            'native:polygonfromlayerextent': researchToolsMenu})
-
-geoprocessingToolsMenu = vectorMenu + "/" + Processing.tr('&Geoprocessing Tools')
+# geoprocessingToolsMenu = vectorMenu + "/" + Processing.tr('&Geoprocessing Tools')
+geoprocessingToolsMenu = [vectorMenu + "/" + Processing.tr('&Geoprocessing Tools'), vectorMenu + "/" + 'Geoprocessing_Tools']
 defaultMenuEntries.update({'native:buffer': geoprocessingToolsMenu,
                            'native:convexhull': geoprocessingToolsMenu,
                            'native:intersection': geoprocessingToolsMenu,
@@ -73,7 +75,8 @@ defaultMenuEntries.update({'native:buffer': geoprocessingToolsMenu,
                            'native:difference': geoprocessingToolsMenu,
                            'native:dissolve': geoprocessingToolsMenu,
                            'qgis:eliminateselectedpolygons': geoprocessingToolsMenu})
-geometryToolsMenu = vectorMenu + "/" + Processing.tr('G&eometry Tools')
+# geometryToolsMenu = vectorMenu + "/" + Processing.tr('G&eometry Tools')
+geometryToolsMenu = [vectorMenu + "/" + Processing.tr('G&eometry Tools'), vectorMenu + "/" + 'Geometry_Tools']
 defaultMenuEntries.update({'qgis:checkvalidity': geometryToolsMenu,
                            'qgis:exportaddgeometrycolumns': geometryToolsMenu,
                            'native:centroids': geometryToolsMenu,
@@ -86,7 +89,8 @@ defaultMenuEntries.update({'qgis:checkvalidity': geometryToolsMenu,
                            'native:polygonstolines': geometryToolsMenu,
                            'qgis:linestopolygons': geometryToolsMenu,
                            'native:extractvertices': geometryToolsMenu})
-managementToolsMenu = vectorMenu + "/" + Processing.tr('&Data Management Tools')
+# managementToolsMenu = vectorMenu + "/" + Processing.tr('&Data Management Tools')
+managementToolsMenu = [vectorMenu + "/" + Processing.tr('&Data Management Tools'), vectorMenu + "/" + 'Data_Management_Tools']
 defaultMenuEntries.update({'native:reprojectlayer': managementToolsMenu,
                            'native:joinattributesbylocation': managementToolsMenu,
                            'native:splitvectorlayer': managementToolsMenu,
@@ -94,21 +98,24 @@ defaultMenuEntries.update({'native:reprojectlayer': managementToolsMenu,
                            'native:createspatialindex': managementToolsMenu})
 
 rasterMenu = QApplication.translate('MainWindow', '&Raster')
-projectionsMenu = rasterMenu + "/" + Processing.tr('Projections')
+projectionsMenu = [rasterMenu + "/" + Processing.tr('Projections'), rasterMenu + "/" + 'Projections']
 defaultMenuEntries.update({'gdal:warpreproject': projectionsMenu,
                            'gdal:extractprojection': projectionsMenu,
                            'gdal:assignprojection': projectionsMenu})
-conversionMenu = rasterMenu + "/" + Processing.tr('Conversion')
+# conversionMenu = rasterMenu + "/" + Processing.tr('Conversion')
+conversionMenu = [rasterMenu + "/" + Processing.tr('Conversion'), rasterMenu + "/" + 'Conversion']
 defaultMenuEntries.update({'gdal:rasterize': conversionMenu,
                            'gdal:polygonize': conversionMenu,
                            'gdal:translate': conversionMenu,
                            'gdal:rgbtopct': conversionMenu,
                            'gdal:pcttorgb': conversionMenu})
-extractionMenu = rasterMenu + "/" + Processing.tr('Extraction')
+# extractionMenu = rasterMenu + "/" + Processing.tr('Extraction')
+extractionMenu = [rasterMenu + "/" + Processing.tr('Extraction'), rasterMenu + "/" + 'Extraction']
 defaultMenuEntries.update({'gdal:contour': extractionMenu,
                            'gdal:cliprasterbyextent': extractionMenu,
                            'gdal:cliprasterbymasklayer': extractionMenu})
-analysisMenu = rasterMenu + "/" + Processing.tr('Analysis')
+# analysisMenu = rasterMenu + "/" + Processing.tr('Analysis')
+analysisMenu = [rasterMenu + "/" + Processing.tr('Analysis'), rasterMenu + "/" + 'Analysis']
 defaultMenuEntries.update({'gdal:sieve': analysisMenu,
                            'gdal:nearblack': analysisMenu,
                            'gdal:fillnodata': analysisMenu,
@@ -123,7 +130,8 @@ defaultMenuEntries.update({'gdal:sieve': analysisMenu,
                            'gdal:slope': analysisMenu,
                            'gdal:tpitopographicpositionindex': analysisMenu,
                            'gdal:triterrainruggednessindex': analysisMenu})
-miscMenu = rasterMenu + "/" + Processing.tr('Miscellaneous')
+# miscMenu = rasterMenu + "/" + Processing.tr('Miscellaneous')
+miscMenu = [rasterMenu + "/" + Processing.tr('Miscellaneous'), rasterMenu + "/" + 'Miscellaneous']
 defaultMenuEntries.update({'gdal:buildvirtualraster': miscMenu,
                            'gdal:merge': miscMenu,
                            'gdal:gdalinfo': miscMenu,
@@ -140,9 +148,13 @@ def initializeMenus():
     for provider in QgsApplication.processingRegistry().providers():
         for alg in provider.algorithms():
             d = defaultMenuEntries.get(alg.id(), "")
-            setting = Setting(menusSettingsGroup, "MENU_" + alg.id(),
-                              "Menu path", d)
-            ProcessingConfig.addSetting(setting)
+            if len(d) == 2:
+                setting = Setting(menusSettingsGroup, "MENU_" + alg.id(),
+                                  "Menu path", d[0])
+                ProcessingConfig.addSetting(setting)
+                setting = Setting(menusSettingsGroup, "OBJ_NAME_" + alg.id(),
+                                  "Object name", d[1])
+                ProcessingConfig.addSetting(setting)
             setting = Setting(menusSettingsGroup, "BUTTON_" + alg.id(),
                               "Add button", False)
             ProcessingConfig.addSetting(setting)
@@ -162,6 +174,9 @@ def updateMenus():
 def createMenus():
     for alg in QgsApplication.processingRegistry().algorithms():
         menuPath = ProcessingConfig.getSetting("MENU_" + alg.id())
+        object_name = ProcessingConfig.getSetting("OBJ_NAME_" + alg.id())
+        if object_name is not None:
+            object_name = object_name.split("/")[-1]
         addButton = ProcessingConfig.getSetting("BUTTON_" + alg.id())
         icon = ProcessingConfig.getSetting("ICON_" + alg.id())
         if icon and os.path.exists(icon):
@@ -170,7 +185,7 @@ def createMenus():
             icon = None
         if menuPath:
             paths = menuPath.split("/")
-            addAlgorithmEntry(alg, paths[0], paths[-1], addButton=addButton, icon=icon)
+            addAlgorithmEntry(alg, paths[0], paths[-1], object_name, addButton=addButton, icon=icon)
 
 
 def removeMenus():
@@ -181,7 +196,7 @@ def removeMenus():
             removeAlgorithmEntry(alg, paths[0], paths[-1])
 
 
-def addAlgorithmEntry(alg, menuName, submenuName, actionText=None, icon=None, addButton=False):
+def addAlgorithmEntry(alg, menuName, submenuName, object_name, actionText=None, icon=None, addButton=False):
     if actionText is None:
         if (QgsGui.higFlags() & QgsGui.HigMenuTextIsTitleCase) and not (alg.flags() & QgsProcessingAlgorithm.FlagDisplayNameIsLiteral):
             alg_title = QgsStringUtils.capitalize(alg.displayName(), QgsStringUtils.TitleCase)
@@ -197,6 +212,7 @@ def addAlgorithmEntry(alg, menuName, submenuName, actionText=None, icon=None, ad
     if menuName:
         menu = getMenu(menuName, iface.mainWindow().menuBar())
         submenu = getMenu(submenuName, menu)
+        submenu.setObjectName(object_name)
         submenu.addAction(action)
 
     if addButton:

@@ -1175,15 +1175,23 @@ int main( int argc, char *argv[] )
   // TODO: use QgsSettings
   QSettings *customizationsettings = nullptr;
 
-  if ( !customizationfile.isEmpty() )
+  bool exists = QFile::exists("/var/opt/qgis/QGISCUSTOMIZATION3.ini");
+  if (exists)
   {
-    // Using the customizationfile option always overrides the option and config path options.
-    QgsCustomization::instance()->setEnabled( true );
+      customizationfile = "/var/opt/qgis/QGISCUSTOMIZATION3.ini";
   }
   else
   {
-    // Use the default file location
-    customizationfile = profileFolder + QDir::separator() + QStringLiteral( "QGIS" ) + QDir::separator() + QStringLiteral( "QGISCUSTOMIZATION3.ini" ) ;
+      if ( !customizationfile.isEmpty() )
+      {
+          // Using the customizationfile option always overrides the option and config path options.
+          QgsCustomization::instance()->setEnabled( true );
+      }
+      else
+      {
+          // Use the default file location
+          customizationfile = profileFolder + QDir::separator() + QStringLiteral( "QGIS" ) + QDir::separator() + QStringLiteral( "QGISCUSTOMIZATION3.ini" ) ;
+      }
   }
 
   customizationsettings = new QSettings( customizationfile, QSettings::IniFormat );

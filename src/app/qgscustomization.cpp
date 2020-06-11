@@ -361,6 +361,20 @@ void QgsCustomizationDialog::init()
     treeWidget->expandItem( wi );
   }
 
+  QList<QTreeWidgetItem*> items = QgsCustomization::instance()->mMainWindowItems;
+  mSettings->beginGroup( QStringLiteral( "Forbidden_edit" ) );
+  for ( int i = 0 ; i < items.length(); ++i )
+  {
+      QString sectionName = items[ i ]->text( 0 );
+
+      for ( int j = 0; j < items[ i ]->childCount(); ++j )
+      {
+          QString menuName = items[ i ]->child( j )->text( 0 );
+          bool disabled = mSettings->value( sectionName + "/" + menuName, false ).toBool();
+          items[ i ]->child( j )->setDisabled( disabled );
+      }
+  }
+
   treeWidget->insertTopLevelItems( 0, QgsCustomization::instance()->mMainWindowItems );
   treeWidget->addTopLevelItem( QgsCustomization::instance()->mBrowserItem );
 
