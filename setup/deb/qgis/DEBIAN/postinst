@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# set +e
+# need_reboot=
+# mem_size=$(free -m | sed '2!d' | sed 's/  */ /g' | cut -d' ' -f2)
+#
+# res=$(cat /etc/group | grep 'digiearth')
+# if [ -z "$res" ]; then
+#     addgroup digiearth
+# fi
+#
+# res=$(groups $SUDO_USER | grep 'digiearth')
+# if [ -z "$res" ]; then
+#     adduser $SUDO_USER digiearth
+#     need_reboot=yes
+# fi
+#
+# if [ "$need_reboot" = "yes" ]; then
+#     echo "The user $SUDO_USER added to the digiearth group. Need reboot computer"
+# fi
+#
+# chown -R root:digiearth /etc/digital-earth
+# chown -R root:digiearth /var/opt/digital-earth
+# chmod -R ug=rwX,o=rX    /var/opt/digital-earth
+#
+# exit 0

@@ -1,0 +1,10 @@
+Package: qgis
+Version: %VERSION%
+Architecture: %ARCHITECTURE%
+Maintainer: Pavel Karelin <karelin@tochka.ai>
+Installed-Size: %INSTALLED_SIZE%
+Depends:  %DEPENDS%
+Section: net
+Priority: standard
+Homepage:
+Description: QGIS

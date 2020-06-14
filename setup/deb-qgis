@@ -1,0 +1,79 @@
+#!/bin/bash
+
+#
+# Формирование deb-пакета qgis
+#
+package_dir=$script_dir/build/${build_subdir}/deb/qgis
+echo -e "\npackage_dir: $package_dir"
+
+package_name="qgis-${package_vers}-${package_date}git${gitrev}-${os_id}${os_ver}-${os_arch}.deb"
+echo "package_name: $package_name"
+
+rm -rf $package_dir
+
+mkdir -p $package_dir/DEBIAN
+mkdir -p $package_dir/opt/qgis
+
+cp $script_dir/setup/deb/qgis/DEBIAN/*     $package_dir/DEBIAN
+
+cp -r $build_dir/output/*                  $package_dir/opt/qgis
+
+# Удаляем питоновские кэш-файлы
+find $package_dir/opt/qgis -name '__pycache__' -type d | xargs -i rm -rf {}
+
+chmod -R go-w           $package_dir
+chmod    u=rwx,go=rx    $package_dir/DEBIAN/post*
+chmod    u=rwx,go=rx    $package_dir/DEBIAN/pre*
+chmod -R ug=rwx,o=rx   $package_dir/opt/qgis
+
+# Размер пакета
+installed_size=$(du -s $package_dir | sed -r 's/([0-9]+).*/\1/')
+echo "installed_size: $installed_size"
+
+packet_depends=$(cat << EOS
+    libc6
+EOS
+)
+
+os_arch_control=$os_arch
+[ "${os_arch:0:3}" = "arm" ] && os_arch_control=armhf
+sed -e "s/%VERSION%/${deb_package_vers}/" \
+    -e "s/%ARCHITECTURE%/${os_arch_control}/" \
+    -e "s/%INSTALLED_SIZE%/${installed_size}/" \
+    -e "s/%DEPENDS%/${packet_depends}/" \
+    -i $package_dir/DEBIAN/control
+
+# Контрольные суммы файлов пакета
+cd $package_dir
+md5deep -rl -o f etc >> DEBIAN/md5sums
+md5deep -rl -o f opt >> DEBIAN/md5sums
+chmod  0644 DEBIAN/md5sums
+cd $script_dir
+
+# Создание deb-пакета
+fakeroot dpkg-deb --build $package_dir ${build_dir}/$package_name
+
+# Проверка deb-пакета
+echo "Start 'lintian'"
+set +e
+lintian --suppress-tags \
+hardening-no-relro,\
+binary-or-shlib-defines-rpath,\
+dir-or-file-in-opt,\
+bad-package-name,\
+package-not-lowercase,\
+systemd-service-file-outside-lib,\
+maintainer-script-calls-systemctl,\
+file-in-etc-not-marked-as-conffile,\
+maintainer-script-ignores-errors,\
+maintainer-script-empty,\
+file-in-unusual-dir \
+${build_dir}/$package_name
+set -e
+
+if [ "$build_deb_package" = "yes" ]; then
+    cd $script_dir
+    echo "Copying the file $package_name to directory ./packages"
+    cp -f ${build_dir}/$package_name ./packages
+    cp -f ${build_dir}/$package_name ./packages/last
+fi
