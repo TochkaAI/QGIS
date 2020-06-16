@@ -1178,6 +1178,7 @@ int main( int argc, char *argv[] )
   bool exists = QFile::exists("/var/opt/qgis/QGISCUSTOMIZATION3.ini");
   if (exists)
   {
+      QgsCustomization::instance()->setEnabled( true );
       customizationfile = "/var/opt/qgis/QGISCUSTOMIZATION3.ini";
   }
   else
