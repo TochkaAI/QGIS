@@ -82,21 +82,27 @@ function check_need_package()
 #     exit 1
 # fi
 
+if [ ! -x /usr/bin/md5deep ]; then
+    if [ ! -L /usr/local/bin/md5deep ]; then
+        echo "Need create symlink for md5deep"
+        sudo ln -sf /usr/bin/hashdeep /usr/local/bin/md5deep
+    fi
+fi
+
 git_branch=$(git status -b -s | head -n1 | sed 's/\./ /' | cut -d' ' -f2 | sed 's/\//_/g')
 build_subdir=${build_mode}-${git_branch}
 build_dir=$script_dir/build_cmake/$build_subdir
 
+[ "$rebuild" = "yes"  ] && rm -rf $build_dir
 mkdir -p $build_dir
 cd $build_dir
-
-[ "$rebuild" = "yes"  ] && rm -rf $build_dir
 
 #
 # Сборка проекта
 #
 set -e
 cmake ../..
-make
+make -j $jobs
 cd $script_dir
 
 if [ "$build_deb_package" != "yes" ]; then
