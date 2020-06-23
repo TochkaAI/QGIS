@@ -334,6 +334,8 @@ override_dh_missing:
 	dh_missing --fail-missing
 
 override_dh_install:
+	mkdir -p $(CURDIR)/debian/tmp/var/opt/qgis/
+	cp $(CURDIR)/QGISCUSTOMIZATION3.ini $(CURDIR)/debian/tmp/var/opt/qgis/
 	dh_install --autodest
 
 override_dh_installchangelogs:
