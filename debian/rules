@@ -89,7 +89,7 @@ CMAKE_OPTS := \
 	-DPEDANTIC=TRUE \
 	-DSERVER_SKIP_ECW=TRUE \
 	-DQGIS_CGIBIN_SUBDIR=/usr/lib/cgi-bin \
-	-DWITH_APIDOC=TRUE \
+	-DWITH_APIDOC=FALSE \
 	-DGENERATE_QHP=TRUE \
 	-DWITH_CUSTOM_WIDGETS=TRUE \
 	-DWITH_SERVER=TRUE \
@@ -251,8 +251,6 @@ ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
 else
 	ninja $(NINJA_OPTS) -C $(QGIS_BUILDDIR)
 endif
-
-	ninja $(NINJA_OPTS) -C $(QGIS_BUILDDIR) apidoc
 
 override_dh_auto_test: test-stamp
 
