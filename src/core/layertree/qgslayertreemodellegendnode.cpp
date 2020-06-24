@@ -404,6 +404,8 @@ QgsRenderContext *QgsLayerTreeModelLegendNode::createTemporaryRenderContext() co
   context->setScaleFactor( dpi / 25.4 );
   context->setRendererScale( scale );
   context->setMapToPixel( QgsMapToPixel( mupp ) );
+  context->setFlag( QgsRenderContext::Antialiasing, true );
+  context->setFlag( QgsRenderContext::RenderSymbolPreview, true );
   return context.release();
 }
 
@@ -1218,6 +1220,8 @@ QgsLayerTreeModelLegendNode::ItemMetrics QgsDataDefinedSizeLegendNode::draw( con
   {
     context->painter()->save();
     context->painter()->translate( ctx->columnLeft, ctx->top );
+
+    // scale to pixels
     context->painter()->scale( 1 / context->scaleFactor(), 1 / context->scaleFactor() );
   }
 

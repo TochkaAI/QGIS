@@ -16,6 +16,9 @@
 #include <QObject>
 
 #include <qgspostgresprovider.h>
+#include <qgspostgresconn.h>
+#include <qgsfields.h>
+
 
 class TestQgsPostgresProvider: public QObject
 {
@@ -34,6 +37,7 @@ class TestQgsPostgresProvider: public QObject
     void decodeJsonMap();
     void decodeJsonbMap();
     void testDecodeDateTimes();
+    void testQuotedValueBigInt();
 };
 
 
@@ -188,6 +192,107 @@ void TestQgsPostgresProvider::testDecodeDateTimes()
   decoded = QgsPostgresProvider::convertValue( QVariant::Time, QVariant::Invalid, QStringLiteral( "18:29:27.569401" ), QStringLiteral( "time" ) );
   QCOMPARE( decoded.type(), QVariant::Time );
 
+}
+
+void TestQgsPostgresProvider::testQuotedValueBigInt()
+{
+  QgsFields fields;
+  QList<int> pkAttrs;
+  QVariantList vlst;
+
+  std::shared_ptr< QgsPostgresSharedData > sdata( new QgsPostgresSharedData() );
+
+  QgsField f0, f1, f2, f3;
+
+  // 4 byte integer
+  f0.setName( "fld_integer" );
+  f0.setType( QVariant::Int );
+  f0.setTypeName( "int4" );
+
+  fields.append( f0 );
+  pkAttrs.append( 0 );
+  vlst.append( 42 );
+
+  // for positive integers, fid  == the value, there is no map.
+  sdata->insertFid( 42, vlst );
+
+  QCOMPARE( QgsPostgresUtils::whereClause( 42, fields, NULL, QgsPostgresPrimaryKeyType::PktInt, pkAttrs, std::shared_ptr<QgsPostgresSharedData>( sdata ) ), QString( "\"fld_integer\"=42" ) );
+
+  // 8 byte integer
+  f1.setName( "fld_bigint" );
+  f1.setType( QVariant::LongLong );
+  f1.setTypeName( "int8" );
+
+  fields.clear();
+  pkAttrs.clear();
+  vlst.clear();
+
+  fields.append( f1 );
+  pkAttrs.append( 0 );
+  vlst.append( -9223372036854775800LL ); // way outside int4 range
+
+  sdata->clear();
+  sdata->insertFid( 1LL, vlst );
+
+  QCOMPARE( QgsPostgresUtils::whereClause( 1LL, fields, NULL, QgsPostgresPrimaryKeyType::PktInt64, pkAttrs, std::shared_ptr<QgsPostgresSharedData>( sdata ) ), QString( "\"fld_bigint\"=-9223372036854775800" ) );
+
+  // double
+  f2.setName( "fld_double" );
+  f2.setType( QVariant::Double );
+  f2.setTypeName( "float8" );
+
+  fields.clear();
+  pkAttrs.clear();
+  vlst.clear();
+
+  fields.append( f2 );
+  pkAttrs.append( 0 );
+  vlst.append( 3.141592741 );
+
+  sdata->clear();
+  sdata->insertFid( 1LL, vlst );
+
+  QCOMPARE( QgsPostgresUtils::whereClause( 1LL, fields, NULL, QgsPostgresPrimaryKeyType::PktFidMap, pkAttrs, std::shared_ptr<QgsPostgresSharedData>( sdata ) ), QString( "\"fld_double\"=3.141592741" ) );
+
+  // text
+  f3.setName( "fld_text" );
+  f3.setType( QVariant::String );
+  f3.setTypeName( "text" );
+
+  fields.clear();
+  pkAttrs.clear();
+  vlst.clear();
+
+  fields.append( f3 );
+  pkAttrs.append( 0 );
+  vlst.append( QString( "QGIS 'Rocks'!" ) );
+
+  sdata->clear();
+  sdata->insertFid( 1LL, vlst );
+
+  QCOMPARE( QgsPostgresUtils::whereClause( 1LL, fields, NULL, QgsPostgresPrimaryKeyType::PktFidMap, pkAttrs, std::shared_ptr<QgsPostgresSharedData>( sdata ) ), QString( "\"fld_text\"::text='QGIS ''Rocks''!'" ) );
+
+  // Composite bigint + text + int
+  pkAttrs.clear();
+
+  pkAttrs.append( 0 );
+  pkAttrs.append( 1 );
+  pkAttrs.append( 2 );
+
+  vlst.clear();
+  vlst.append( -9223372036854775800LL );
+  vlst.append( QString( "QGIS 'Rocks'!" ) );
+  vlst.append( 42 );
+
+  fields.clear();
+  fields.append( f1 );
+  fields.append( f3 );
+  fields.append( f0 );
+
+  sdata->clear();
+  sdata->insertFid( 1LL, vlst );
+
+  QCOMPARE( QgsPostgresUtils::whereClause( 1LL, fields, NULL, QgsPostgresPrimaryKeyType::PktFidMap, pkAttrs, std::shared_ptr<QgsPostgresSharedData>( sdata ) ), QString( "\"fld_bigint\"=-9223372036854775800 AND \"fld_text\"::text='QGIS ''Rocks''!' AND \"fld_integer\"=42" ) );
 }
 
 QGSTEST_MAIN( TestQgsPostgresProvider )

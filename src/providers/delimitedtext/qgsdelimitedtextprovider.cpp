@@ -61,6 +61,15 @@ QRegExp QgsDelimitedTextProvider::sCrdDmsRegexp( "^\\s*(?:([-+nsew])\\s*)?(\\d{1
 QgsDelimitedTextProvider::QgsDelimitedTextProvider( const QString &uri, const ProviderOptions &options )
   : QgsVectorDataProvider( uri, options )
 {
+  // uri should be in the form of "file:///path/to/file.csv?query=params", if not, enforce it in that format
+  // first read the already encoded url to get the query string
+  QUrl url = QUrl::fromEncoded( uri.toLatin1() );
+  // temporarily store the query string
+  const QString tmpUrlQuery = url.query();
+  // make sure that the url is actually prefixed with "file://". However, this breaks the query part ("?" char gets encoded), so discard the query string
+  url = QUrl::fromLocalFile( url.path() );
+  // finally restore the query part
+  url.setQuery( tmpUrlQuery );
 
   // Add supported types to enable creating expression fields in field calculator
   setNativeTypes( QList< NativeType >()
@@ -68,11 +77,15 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider( const QString &uri, const Pr
                   << QgsVectorDataProvider::NativeType( tr( "Whole number (integer - 64 bit)" ), QStringLiteral( "int8" ), QVariant::LongLong )
                   << QgsVectorDataProvider::NativeType( tr( "Decimal number (double)" ), QStringLiteral( "double precision" ), QVariant::Double, -1, -1, -1, -1 )
                   << QgsVectorDataProvider::NativeType( tr( "Text, unlimited length (text)" ), QStringLiteral( "text" ), QVariant::String, -1, -1, -1, -1 )
+
+                  // date type
+                  << QgsVectorDataProvider::NativeType( tr( "Date" ), QStringLiteral( "date" ), QVariant::Date, -1, -1, -1, -1 )
+                  << QgsVectorDataProvider::NativeType( tr( "Time" ), QStringLiteral( "time" ), QVariant::Time, -1, -1, -1, -1 )
+                  << QgsVectorDataProvider::NativeType( tr( "Date & Time" ), QStringLiteral( "datetime" ), QVariant::DateTime, -1, -1, -1, -1 )
                 );
 
   QgsDebugMsgLevel( "Delimited text file uri is " + uri, 2 );
 
-  const QUrl url = QUrl::fromEncoded( uri.toLatin1() );
   mFile = qgis::make_unique< QgsDelimitedTextFile >();
   mFile->setFromUrl( url );
 
@@ -399,6 +412,10 @@ void QgsDelimitedTextProvider::scanFile( bool buildIndexes )
   QList<bool> couldBeInt;
   QList<bool> couldBeLongLong;
   QList<bool> couldBeDouble;
+  QList<bool> couldBeDateTime;
+  QList<bool> couldBeDate;
+  QList<bool> couldBeTime;
+
   bool foundFirstGeometry = false;
 
   while ( true )
@@ -578,6 +595,9 @@ void QgsDelimitedTextProvider::scanFile( bool buildIndexes )
         couldBeInt.append( false );
         couldBeLongLong.append( false );
         couldBeDouble.append( false );
+        couldBeDateTime.append( false );
+        couldBeDate.append( false );
+        couldBeTime.append( false );
       }
 
       // If this column has been empty so far then initiallize it
@@ -589,6 +609,9 @@ void QgsDelimitedTextProvider::scanFile( bool buildIndexes )
         couldBeInt[i] = true;
         couldBeLongLong[i] = true;
         couldBeDouble[i] = true;
+        couldBeDateTime[i] = true;
+        couldBeDate[i] = true;
+        couldBeTime[i] = true;
       }
 
       if ( ! mDetectTypes )
@@ -604,12 +627,12 @@ void QgsDelimitedTextProvider::scanFile( bool buildIndexes )
         ( void )value.toInt( &couldBeInt[i] );
       }
 
-      if ( couldBeLongLong[i] && ! couldBeInt[i] )
+      if ( couldBeLongLong[i] && !couldBeInt[i] )
       {
         ( void )value.toLongLong( &couldBeLongLong[i] );
       }
 
-      if ( couldBeDouble[i] && ! couldBeLongLong[i] )
+      if ( couldBeDouble[i] && !couldBeLongLong[i] )
       {
         if ( ! mDecimalPoint.isEmpty() )
         {
@@ -617,12 +640,33 @@ void QgsDelimitedTextProvider::scanFile( bool buildIndexes )
         }
         ( void )value.toDouble( &couldBeDouble[i] );
       }
+
+      if ( couldBeDateTime[i] )
+      {
+        QDateTime dt;
+        if ( value.length() > 10 )
+        {
+          dt = QDateTime::fromString( value, Qt::ISODate );
+        }
+        couldBeDateTime[i] = ( dt.isValid() );
+      }
+
+      if ( couldBeDate[i] && !couldBeDateTime[i] )
+      {
+        QDate d = QDate::fromString( value, Qt::ISODate );
+        couldBeDate[i] = d.isValid();
+      }
+
+      if ( couldBeTime[i] && !couldBeDateTime[i] )
+      {
+        QTime t = QTime::fromString( value );
+        couldBeTime[i] = t.isValid();
+      }
     }
   }
 
-  // Now create the attribute fields.  Field types are integer by preference,
-  // failing that double, failing that text.
-
+  // Now create the attribute fields.  Field types are determined by prioritizing
+  // integer, failing that double, datetime, date, time, and finally text.
   QStringList fieldNames = mFile->fieldNames();
   mFieldCount = fieldNames.size();
   attributeColumns.clear();
@@ -659,7 +703,20 @@ void QgsDelimitedTextProvider::scanFile( bool buildIndexes )
       {
         typeName = QStringLiteral( "double" );
       }
+      else if ( couldBeDateTime[i] )
+      {
+        typeName = QStringLiteral( "datetime" );
+      }
+      else if ( couldBeDate[i] )
+      {
+        typeName = QStringLiteral( "date" );
+      }
+      else if ( couldBeTime[i] )
+      {
+        typeName = QStringLiteral( "time" );
+      }
     }
+
     if ( typeName == QStringLiteral( "integer" ) )
     {
       fieldType = QVariant::Int;
@@ -673,10 +730,23 @@ void QgsDelimitedTextProvider::scanFile( bool buildIndexes )
       typeName = QStringLiteral( "double" );
       fieldType = QVariant::Double;
     }
+    else if ( typeName == QStringLiteral( "datetime" ) )
+    {
+      fieldType = QVariant::DateTime;
+    }
+    else if ( typeName == QStringLiteral( "date" ) )
+    {
+      fieldType = QVariant::Date;
+    }
+    else if ( typeName == QStringLiteral( "time" ) )
+    {
+      fieldType = QVariant::Time;
+    }
     else
     {
       typeName = QStringLiteral( "text" );
     }
+
     attributeFields.append( QgsField( fieldNames[i], fieldType, typeName ) );
   }
 
