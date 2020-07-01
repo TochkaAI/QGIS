@@ -32,6 +32,7 @@ doc/INSTALL.tex
 i18n/*.qm
 Makefile
 *.pro.user
+*.qbs.user
 *.stash
 ms-windows/*.exe*
 ms-windows/Installer-Files/postinstall.bat
@@ -77,3 +78,4 @@ python/plugins/processing/tests/testdata/custom/*.aux.xml
 python/plugins/processing/tests/testdata/*.aux.xml
 Thumb.db
 Testing/*
+

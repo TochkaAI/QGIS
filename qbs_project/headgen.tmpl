@@ -1,0 +1,39 @@
+
+#pragma once
+
+#ifdef %PRODUCT_NAME%_STATIC_DEFINE
+#  define %PRODUCT_NAME%_EXPORT
+#  define %PRODUCT_NAME%_NO_EXPORT
+#else
+#  ifndef %PRODUCT_NAME%_EXPORT
+#    ifdef %TARGET_NAME%_EXPORTS
+        /* We are building this library */
+#      define %PRODUCT_NAME%_EXPORT __attribute__((visibility("default")))
+#    else
+        /* We are using this library */
+#      define %PRODUCT_NAME%_EXPORT __attribute__((visibility("default")))
+#    endif
+#  endif
+
+#  ifndef %PRODUCT_NAME%_NO_EXPORT
+#    define %PRODUCT_NAME%_NO_EXPORT __attribute__((visibility("hidden")))
+#  endif
+#endif
+
+#ifndef %PRODUCT_NAME%_DEPRECATED
+#  define %PRODUCT_NAME%_DEPRECATED __attribute__ ((__deprecated__))
+#endif
+
+#ifndef %PRODUCT_NAME%_DEPRECATED_EXPORT
+#  define %PRODUCT_NAME%_DEPRECATED_EXPORT %PRODUCT_NAME%_EXPORT %PRODUCT_NAME%_DEPRECATED
+#endif
+
+#ifndef %PRODUCT_NAME%_DEPRECATED_NO_EXPORT
+#  define %PRODUCT_NAME%_DEPRECATED_NO_EXPORT %PRODUCT_NAME%_NO_EXPORT %PRODUCT_NAME%_DEPRECATED
+#endif
+
+#if 0 /* DEFINE_NO_DEPRECATED */
+#  ifndef %PRODUCT_NAME%_NO_DEPRECATED
+#    define %PRODUCT_NAME%_NO_DEPRECATED
+#  endif
+#endif
