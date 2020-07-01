@@ -17,6 +17,7 @@
 #define QGSRULEBASED3DRENDERERWIDGET_H
 
 #include <QWidget>
+#include <QAction>
 
 #include "qgspanelwidget.h"
 

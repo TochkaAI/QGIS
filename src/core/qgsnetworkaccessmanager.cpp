@@ -33,7 +33,7 @@
 
 #include <QUrl>
 #include <QTimer>
-#include <QBuffer>
+#include <QtCore/QBuffer>
 #include <QNetworkReply>
 #include <QThreadStorage>
 #include <QAuthenticator>

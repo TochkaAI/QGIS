@@ -15,6 +15,7 @@
 
 #include "qgs3dmapscene.h"
 
+#include <Qt3DCore/QTransform>
 #include <Qt3DRender/QCamera>
 #include <Qt3DRender/QMesh>
 #include <Qt3DRender/QObjectPicker>

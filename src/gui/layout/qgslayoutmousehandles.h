@@ -20,6 +20,7 @@
 // We don't want to expose this in the public API
 #define SIP_NO_FILE
 
+#include "qgslayoutundocommand.h"
 #include "qgsgraphicsviewmousehandles.h"
 #include <QPointer>
 #include <memory>

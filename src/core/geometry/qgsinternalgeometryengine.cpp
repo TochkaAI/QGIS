@@ -28,7 +28,7 @@
 #include "qgslogger.h"
 #include "qgstessellator.h"
 #include "qgsfeedback.h"
-#include <QTransform>
+#include <QtGui/QTransform>
 #include <functional>
 #include <memory>
 #include <queue>

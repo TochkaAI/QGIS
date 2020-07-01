@@ -25,6 +25,7 @@
 #include "qgsterraintexturegenerator_p.h"
 #include "qgsterraintileentity_p.h"
 
+#include <Qt3DCore/QTransform>
 #include <Qt3DRender/QGeometryRenderer>
 
 ///@cond PRIVATE

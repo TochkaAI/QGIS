@@ -16,6 +16,7 @@
 #include "qgsflatterraingenerator.h"
 
 #include <Qt3DRender/QGeometryRenderer>
+#include <Qt3DCore/QTransform>
 
 #include "qgs3dmapsettings.h"
 #include "qgschunknode_p.h"

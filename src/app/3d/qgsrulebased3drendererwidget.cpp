@@ -23,7 +23,6 @@
 #include "qgssymbol3dwidget.h"
 #include "qgsapplication.h"
 
-#include <QAction>
 #include <QClipboard>
 #include <QMessageBox>
 

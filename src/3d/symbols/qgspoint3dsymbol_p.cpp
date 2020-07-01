@@ -15,6 +15,7 @@
 
 #include "qgspoint3dsymbol_p.h"
 
+#include <Qt3DCore/QTransform>
 #include <Qt3DRender/QAttribute>
 #include <Qt3DRender/QBuffer>
 #include <Qt3DRender/QEffect>

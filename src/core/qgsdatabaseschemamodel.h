@@ -23,9 +23,10 @@
 
 #include "qgis_core.h"
 #include "qgis_sip.h"
+#include "qgsabstractdatabaseproviderconnection.h"
 
 class QgsProviderMetadata;
-class QgsAbstractDatabaseProviderConnection;
+//class QgsAbstractDatabaseProviderConnection;
 
 /**
  * \ingroup core

@@ -19,7 +19,7 @@
 
 #include "qgis_core.h"
 #include "qgis_sip.h"
-#include <QTransform>
+#include <QtGui/QTransform>
 #include <vector>
 #include "qgsunittypes.h"
 #include <cassert>
