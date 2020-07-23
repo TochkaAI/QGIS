@@ -19,6 +19,7 @@ Module {
     //property string removeChunkDir: undefined
     //property string generatedFilesSubDir: "sip.gen"
     property string generatedFilesSubDir: undefined // core, gui, analysis
+    property var generatedFilesCount: 5
 
     // Output
     property string generatedFilesDir: {
@@ -115,6 +116,7 @@ Module {
             var baseSipName = FileInfo.baseName(baseSipFile);
 
             //console.info("sip_corepart: " + generatedFilesDir + "/sip" + moduleSipName + "part0.cpp")
+            //console.info("sip 1 :")
 
             var sipCxxFlags = [
                 "-Wno-deprecated-declarations",
@@ -156,12 +158,12 @@ Module {
                 cpp: {
                     cxxFlags: sipCxxFlags
                 }
-            },{
-                filePath: generatedFilesDir + "/sip" + moduleSipName + "part5.cpp",
-                fileTags: ["cpp"],
-                cpp: {
-                    cxxFlags: sipCxxFlags
-                }
+//            },{
+//                filePath: generatedFilesDir + "/sip" + moduleSipName + "part5.cpp",
+//                fileTags: ["cpp"],
+//                cpp: {
+//                    cxxFlags: sipCxxFlags
+//                }
             },{ // sipAPI_core.h
                 filePath: generatedFilesDir + "/sipAPI" + moduleSipName + ".h",
                 fileTags: ["hpp"],
@@ -191,7 +193,7 @@ Module {
             // -I /usr/share/sip/PyQt5
             // /home/hkarel/CProjects/QGIS/build2/python/core/core.sip
 
-            var args = ["-w", "-e", "-g", "-o", "-j", "6", "-n", "sip"];
+            var args = ["-w", "-e", "-g", "-o", "-j", "5", "-n", "sip"];
             args = args.concat(["-x", "ANDROID", "-x", "ARM", "-x", "MOBILITY_LOCATION"]);
             args = args.concat(["-t", "WS_X11", "-t", "Qt_5_12_4"])
 
@@ -208,17 +210,14 @@ Module {
             args.push("/usr/share/sip/PyQt5");
 
             args.push("-y");
-            //args.push(product.buildDirectory + "/" + baseSipName + ".pyi");
-            args.push( project.buildDirectory + "/python/" + baseSipName + ".pyi");
+            args.push(project.buildDirectory + "/python/" + baseSipName + ".pyi");
 
             args.push(generatedFilesDir + "/" + baseSipFile);
 
             //File.makePath(generatedFilesDir);
-
-            //console.info("sip: " + args)
+            //console.info("sip 0 : " + args)
 
             var cmd = new Command("/usr/bin/sip", args);
-            //cmd.workingDirectory = generatedFilesDir;
             cmd.workingDirectory = project.buildDirectory + "/python";
             cmd.description = "sip code generation";
             cmd.highlight = "codegen";
